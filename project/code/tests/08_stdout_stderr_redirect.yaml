@@ -1,0 +1,80 @@
+programs:
+  # stdout one file, stderr another file
+  output_to_files:
+    cmd: /bin/bash -c "echo 'Message stdout'; echo 'Message stderr' >&2; sleep 5"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /tmp/taskmaster_stdout.log
+    stderr: /tmp/taskmaster_stderr.log
+  
+  # stdout and stderr toward same file 
+  output_combined:
+    cmd: /bin/bash -c "echo 'Stdout line 1'; echo 'Stderr line 1' >&2; echo 'Stdout line 2'; sleep 5"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /tmp/taskmaster_combined.log
+    stderr: /tmp/taskmaster_combined.log
+  
+  # stdout 
+  output_discard_stdout:
+    cmd: /bin/bash -c "echo 'This should disappear'; echo 'This error visible' >&2; sleep 5"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /dev/null
+    stderr: /tmp/taskmaster_only_stderr.log
+  
+# stderr
+  output_discard_stderr:
+    cmd: /bin/bash -c "echo 'This is visible'; echo 'This error disappears' >&2; sleep 5"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /tmp/taskmaster_only_stdout.log
+    stderr: /dev/null
+  
+  output_discard_all:
+    cmd: /bin/bash -c "echo 'Gone'; echo 'Also gone' >&2; sleep 5"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /dev/null
+    stderr: /dev/null
+  

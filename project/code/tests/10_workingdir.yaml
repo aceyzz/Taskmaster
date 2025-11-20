@@ -1,0 +1,15 @@
+programs:
+  demo_workdir:
+    cmd: /bin/bash -c "echo 'Current directory:'; pwd; echo; echo 'Creating a test file...'; touch demo_file.txt; echo 'File created!'; ls -la demo_file.txt"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 0
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /tmp/demo_workdir_output.log
+    stderr: /tmp/demo_workdir_output.log

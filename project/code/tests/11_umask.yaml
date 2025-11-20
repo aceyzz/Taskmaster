@@ -1,0 +1,32 @@
+programs:
+  # REGULAR FILE (rw-r--r--)
+  umask_normal:
+    cmd: /bin/bash -c "touch /tmp/fichier_normal.txt; echo 'Contenu modifiable' > /tmp/fichier_normal.txt; ls -la /tmp/fichier_normal.txt"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 0
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /tmp/demo_umask_output.log
+    stderr: /tmp/demo_umask_output.log
+  
+  # READONLY (r--r--r--)
+  umask_readonly:
+    cmd: /bin/bash -c "touch /tmp/fichier_readonly.txt; echo 'Contenu non modifiable' > /tmp/fichier_readonly.txt; chmod 444 /tmp/fichier_readonly.txt; ls -la /tmp/fichier_readonly.txt"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 0
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /tmp/demo_umask_output.log
+    stderr: /tmp/demo_umask_output.log

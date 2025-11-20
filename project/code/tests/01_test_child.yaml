@@ -1,0 +1,13 @@
+programs:
+  test_service:
+    cmd: /bin/sleep 300 
+    numprocs: 1
+    autostart: true
+    autorestart: never
+    umask: 022
+    workingdir: /tmp
+    exitcodes: [0]
+    startretries: 3
+    starttime: 5
+    stopsignal: TERM
+    stoptime: 10

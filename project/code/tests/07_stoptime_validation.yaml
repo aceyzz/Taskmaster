@@ -1,0 +1,42 @@
+programs:
+  # short stoptime
+  stoptime_2sec:
+    cmd: /bin/bash -c "trap '' TERM; sleep 1000"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 2
+  
+  # medium stoptime
+  stoptime_5sec:
+    cmd: /bin/bash -c "trap '' TERM; sleep 1000"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 5
+  
+  # long stoptime 
+  stoptime_10sec:
+    cmd: /bin/bash -c "trap '' TERM; sleep 1000"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 10

@@ -1,0 +1,13 @@
+programs:
+  initial_service:
+    cmd: /bin/sh -c 'while true; do echo "VERSION MODIFIÉE"; sleep 5; done'
+    numprocs: 1
+    autostart: true
+    autorestart: always
+    umask: 022
+    workingdir: /tmp
+    exitcodes: [0]
+    startretries: 3
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 10

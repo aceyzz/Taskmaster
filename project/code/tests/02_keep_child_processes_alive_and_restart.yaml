@@ -1,0 +1,13 @@
+programs:
+  crash_service:
+    cmd: /bin/sh -c 'echo "Crash dans 3s"; sleep 3; exit 1'
+    numprocs: 1
+    autostart: true
+    autorestart: always
+    umask: 022
+    workingdir: /tmp
+    exitcodes: [0]
+    startretries: 5
+    starttime: 1
+    stopsignal: TERM
+    stoptime: 10

@@ -1,0 +1,16 @@
+services:
+  taskmaster:
+    build: ./vm
+    init: true
+    container_name: taskmaster
+    hostname: taskmaster
+    networks:
+      - taskmaster_net
+    volumes:
+      - ./code:/work
+    working_dir: /work
+    command: ["sleep", "infinity"]
+
+networks:
+    taskmaster_net:
+      driver: bridge

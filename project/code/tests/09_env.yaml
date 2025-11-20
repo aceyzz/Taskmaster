@@ -1,0 +1,19 @@
+programs:
+  demo_env:
+    cmd: /bin/bash -c "echo 'Standard variables:'; echo \"USER=$USER\"; echo \"HOME=$HOME\"; echo; echo 'Custom variables from YAML:'; echo \"APP_NAME=$APP_NAME\"; echo \"APP_VERSION=$APP_VERSION\"; echo \"DATABASE_URL=$DATABASE_URL\"; sleep 10"
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: never
+    exitcodes: [0]
+    startretries: 0
+    starttime: 0
+    stopsignal: TERM
+    stoptime: 3
+    stdout: /tmp/demo_env_output.log
+    stderr: /tmp/demo_env_output.log
+    env:
+      APP_NAME: "Taskmaster Demo"
+      APP_VERSION: "1.0.0"
+      DATABASE_URL: "postgresql://localhost:5432/mydb"
