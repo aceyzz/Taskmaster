@@ -231,7 +231,7 @@ echo "Attempt" > /tmp/fichier_readonly.txt
 
 ## Grade
 
-> En attente d'évaluation
+<img src="./utils/100.png" alt="Grade" width="150">
 
 <br>
 
