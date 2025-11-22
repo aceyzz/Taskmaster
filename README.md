@@ -4,33 +4,37 @@
 
 # taskmaster — 42
 
-Daemon de gestion et supervision de processus asynchrone écrit en Python 3, inspiré de Supervisor. Taskmaster permet de démarrer, arrêter, redémarrer et monitorer des services avec des capacités avancées de reconfiguration, reloadable à chaud via SIGHUP.
+Daemon gestionnaire de processus inspiré de Supervisor, conçu pour superviser et contrôler l’exécution de programmes sous forme de processus enfants. Il permet de démarrer, arrêter, redémarrer et surveiller des services de manière interactive, tout en garantissant leur disponibilité grâce à des règles de contrôle configurables. L’application fonctionne au premier plan et expose un shell intégré, assurant un pilotage simple et direct sans architecture client-serveur.  
 
 <br>
 
 ## Description
 
-Taskmaster est un daemon de supervision de processus conçu pour gérer plusieurs services enfants avec granularité. Chaque service peut avoir plusieurs instances parallèles (via `numprocs`). Le système fournit un shell interactif de contrôle avec des commandes pour gérer l'état des services, et un système de monitoring continu qui détecte les crashs et redémarrage selon les stratégies configurées (`autorestart: always|never|unexpected`).  
-Les services sont configurables via fichiers YAML avec support pour : variables d'environnement personnalisées, redirection des flux stdout/stderr, contrôle d'utilisateur, signaux d'arrêt personnalisés, masques `umask`, répertoires de travail isolés, et codes de sortie attendus. La configuration peut être rechargée à chaud sans redémarrage global via la commande `reload` ou signal `SIGHUP`.
+Chaque service est défini dans un fichier YAML et exécuté comme un processus isolé, avec son propre environnement, répertoire de travail, `umask`, flux `stdout`/`stderr` et stratégie de redémarrage. Taskmaster surveille l’état de chaque instance de service en continu et applique la politique de reprise appropriée en cas d’arrêt ou de crash. Une reconfiguration à chaud permet de modifier dynamiquement la supervision sans interrompre les services inchangés, garantissant une continuité d’exécution.  
 
 ### Architecture
 
-**ServiceHandler** : Orchestrateur central combinant trois mixins pour la gestion complète du cycle de vie (`LifecycleMixin`), monitoring continu (`MonitorMixin`), et reconfiguration dynamique (`ReloadMixin`).  
-**Service** : Classe encapsulant un processus enfant avec gestion asynchrone du démarrage/arrêt gracieux.  
-**ServiceMonitor** : Boucle de monitoring asynchrone détectant les crashs et appliquant la logique de redémarrage.  
-**ControlShell** : Interface interactive non-bloquante avec support readline pour la saisie des commandes utilisateur.  
-**Config** : Chargeur YAML avec validation stricte Cerberus, supportant deux formats de configuration (programmes ou services).  
+Taskmaster repose sur une organisation modulaire :  
+– **`ServiceHandler`** agit comme orchestrateur central, regroupant la gestion du cycle de vie, le monitoring continu et la reconfiguration dynamique.  
+– **`LifecycleMixin`** gère le démarrage, l’arrêt, le redémarrage et la suppression des services.  
+– **`MonitorMixin`** surveille les services en tâche de fond et applique les stratégies d’autorestart.  
+– **`ReloadMixin`** détecte les modifications de configuration, ajoute/supprime/actualise les services et préserve ceux qui n’ont pas changé.  
+– **`Service`** encapsule l’exécution d’un processus enfant et assure sa stabilité (starttime, stopsignal, stoptime, exitcodes…).  
+– **`ServiceMonitor`** exécute la boucle de supervision asynchrone.  
+– **`ControlShell`** fournit une interface non-bloquante avec autocomplétion, historique et commandes de contrôle.  
+– **`Config`** charge et valide strictement les fichiers YAML et normalise les définitions des services.  
 
 ### Caractéristiques techniques
 
-- **Asynchrone** : Entièrement asyncio, sans threads  
-- **Monitoring intelligent** : Détecte crashs précoces, attentes de stabilité (starttime), dépassements de limites de redémarrage  
-- **Gestion multi-instances** : Chaque service peut spawner N processus parallèles via `numprocs`  
-- **Graceful shutdown** : Arrêt progressif avec signal configurable (TERM/KILL/USR1/USR2/etc.) et timeout  
-- **Validation stricte** : Cerberus schema garantissant l'intégrité des configurations  
-- **Isolation** : Chaque processus enfant dans son propre session group pour un arrêt propre  
-- **Logging complet** : Timestampé en fichier avec rotation, séparation console/fichier  
-- **Signaux système** : SIGINT (shutdown), SIGHUP (reload), SIGTERM (stop)  
+– Fonctionnement 100 % asynchrone basé sur asyncio.  
+– Support multi-instances via numprocs.  
+– Surveillance continue de l’état des processus et détection de crashs précoces.  
+– Rechargement dynamique de configuration via reload ou signal SIGHUP, sans désactiver les services non modifiés.  
+– Arrêt progressif configurable (stopsignal + timeout) avec fallback en SIGKILL.  
+– Redirection sélective des flux stdout/stderr ou mise à la poubelle (/dev/null).  
+– Support complet des variables d’environnement, umask octal, working directory et exécution sous un autre utilisateur.  
+– Logging complet, horodaté et persisté en fichiers locaux.  
+– Shell intégré avec commandes status, start, stop, restart, reload, exit.  
 
 <br>
 
@@ -208,14 +212,13 @@ echo "Attempt" > /tmp/fichier_readonly.txt
 
 ## Choix d'implémentation
 
-**Asyncio pur** : Choix de l'asynchrone sans threads pour éviter les race conditions et simplifier la gestion concurrente.  
-**Mixins** : Séparation logique du code (lifecycle/monitoring/reload) pour maintenabilité et testabilité.  
-**Lock asynchrone** : Protège les modifications d'état des services contre les race conditions entre shell et monitoring.  
-**Détection d'early-exit** : Distinction entre crashs pendant starttime vs après stabilisation pour une logique de redémarrage appropriée  
-**Validation Cerberus** : Permet une validation déclarative stricte avec messages d'erreur explicites.  
-**Session group** : Chaque processus dans sa propre session permet un arrêt atomique de tous les descendants.  
-**Reload atomique** : Les modifications (ajout/suppression/update) appliquées en bloc sous lock pour cohérence garantie.  
-**Umask octal** : Support natif octal (0o22) et string avec normalisation interne.
+– Utilisation d’asyncio pour éviter les verrous système complexes et garantir une exécution concurrente prévisible.  
+– Découpage en mixins pour séparer clairement les responsabilités et permettre une évolutivité du code.  
+– Locks asynchrones pour garantir la cohérence entre les opérations shell et la boucle de monitoring.  
+– Démarrage des processus dans des groupes de sessions distincts pour assurer l’arrêt complet de tous les sous-processus.  
+– Validation stricte de la configuration via Cerberus pour prévenir les comportements indéterminés lors des reloads.  
+– Reload atomique : toutes les modifications sont réalisées sous lock, en bloquant uniquement les opérations critiques sur les services.  
+– Politique explicite de gestion des crashs distinguant le “crash précoce” avant stabilisation du “crash inattendu” en cours d’exécution.  
 
 <br>
 

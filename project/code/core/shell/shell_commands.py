@@ -108,17 +108,16 @@ class ShellCommands:
         logger.info("[Shell] Exit command received.")
         print("Stopping all services and shutting down...")
 
+        # Stop monitor (quick operation, keep timeout)
         try:
             if hasattr(self.monitor, "stop"):
-                await asyncio.wait_for(self.monitor.stop(), timeout=3.0)
+                await asyncio.wait_for(self.monitor.stop(), timeout=5.0)
         except asyncio.TimeoutError:
             logger.warning("[Shell] Monitor stop timed out, continuing shutdown.")
 
-        try:
-            if hasattr(self.handler, "delete"):
-                await asyncio.wait_for(self.handler.delete(), timeout=3.0)
-        except asyncio.TimeoutError:
-            logger.warning("[Shell] Timeout while stopping services: forcing clean exit as per spec.")
+        # Stop all services (NO TIMEOUT - wait for all to stop)
+        if hasattr(self.handler, "delete"):
+            await self.handler.delete()
 
         self.shell._running = False
         logger.info("[Shell] Taskmaster exited cleanly.")
